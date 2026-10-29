@@ -155,4 +155,28 @@ noteForm.addEventListener("submit", async (event) => {
   }
 });
 
+notesList.addEventListener("click", async (event) => {
+  if (!(event.target instanceof Element) || isBusy) return;
+
+  const deleteButton = event.target.closest(".delete-btn");
+  if (!deleteButton) return;
+
+  const noteId = deleteButton.dataset.noteId;
+  setBusy(true);
+  setStatus("Deleting note…");
+
+  try {
+    await request(`${API_URL}/${encodeURIComponent(noteId)}`, { method: "DELETE" });
+    notes = notes.filter((note) => String(note.id) !== noteId);
+    renderNotes();
+
+    // JSONPlaceholder acknowledges POST and DELETE but does not persist them; this removal is for the current page only.
+    setStatus(`Note ${noteId} removed from this page. The practice API does not save changes.`, "success");
+  } catch {
+    setStatus("Could not delete the note. Please try again.", "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
 renderNotes();
